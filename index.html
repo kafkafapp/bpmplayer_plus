@@ -640,9 +640,11 @@
     if (files.length === 0) return;
 
     // Try to match against missing placeholder tracks by name first
+    // (compare with the extension stripped, since placeholder names are stored without it)
     const toAnalyze = [];
     for (const file of files){
-      const placeholder = tracks.find(t => t.missing && t.name === file.name);
+      const strippedName = file.name.replace(/\.[^/.]+$/, '');
+      const placeholder = tracks.find(t => t.missing && t.name === strippedName);
       if (placeholder){
         placeholder.file = file;
         placeholder.url = URL.createObjectURL(file);
