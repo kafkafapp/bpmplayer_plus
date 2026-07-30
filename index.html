@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BPM PLAYER DJ Style</title>
+
+<style>
+
+body{
+    margin:0;
+    background:#090909;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+.app{
+    max-width:430px;
+    margin:auto;
+    padding:15px;
+}
+
+
+/* タイトル */
+
+.header{
+    text-align:center;
+    font-size:22px;
+    letter-spacing:3px;
+    margin-bottom:20px;
+}
+
+
+
+/* BPM表示 */
+
+.bpm-panel{
+
+    background:#151515;
+    border-radius:15px;
+    padding:20px;
+    text-align:center;
+
+    border:1px solid #333;
+
+}
+
+
+.label{
+    color:#888;
+    font-size:14px;
+}
+
+
+.bpm{
+
+    font-size:80px;
+    font-weight:bold;
+    color:#00e5ff;
+
+}
+
+
+.unit{
+
+    font-size:20px;
+    color:#00e5ff;
+
+}
+
+
+
+.original{
+
+    margin-top:10px;
+    color:#aaa;
+
+}
+
+
+
+/* 速度 */
+
+.speed-panel{
+
+    margin-top:15px;
+
+    background:#151515;
+
+    border-radius:15px;
+
+    padding:15px;
+
+    text-align:center;
+
+}
+
+
+.speed{
+
+    font-size:40px;
+
+    font-weight:bold;
+
+}
+
+
+
+.speed-buttons{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:20px;
+
+}
+
+
+.speed-buttons button{
+
+    width:90px;
+
+    height:60px;
+
+    background:#222;
+
+    color:white;
+
+    border:1px solid #555;
+
+    border-radius:10px;
+
+    font-size:30px;
+
+}
+
+
+
+/* バー */
+
+.slider{
+
+    margin-top:20px;
+
+}
+
+
+.track{
+
+    height:12px;
+
+    background:#333;
+
+    border-radius:10px;
+
+}
+
+
+.track span{
+
+    display:block;
+
+    width:60%;
+
+    height:100%;
+
+    background:#00e5ff;
+
+    border-radius:10px;
+
+}
+
+
+
+
+/* 再生操作 */
+
+.controls{
+
+    display:grid;
+
+    grid-template-columns:repeat(5,1fr);
+
+    gap:8px;
+
+    margin-top:25px;
+
+}
+
+
+.controls button{
+
+    height:55px;
+
+    background:#222;
+
+    color:white;
+
+    border:none;
+
+    border-radius:8px;
+
+    font-size:16px;
+
+}
+
+
+
+
+/* プレイリスト */
+
+.playlist{
+
+    margin-top:30px;
+
+}
+
+
+.song{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    background:#151515;
+
+    padding:15px;
+
+    margin-bottom:8px;
+
+    border-radius:8px;
+
+}
+
+
+.song-bpm{
+
+    color:#00e5ff;
+
+    font-weight:bold;
+
+}
+
+
+
+/* 下部 */
+
+.bottom button{
+
+    width:100%;
+
+    height:50px;
+
+    margin-top:10px;
+
+    background:#222;
+
+    color:white;
+
+    border:none;
+
+    border-radius:8px;
+
+    font-size:18px;
+
+}
+
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+<div class="app">
+
+
+<div class="header">
+BPM CONTROLLER
+</div>
+
+
+
+<div class="bpm-panel">
+
+
+<div class="label">
+CURRENT BPM
+</div>
+
+
+<div class="bpm">
+128
+</div>
+
+
+<div class="unit">
+BPM
+</div>
+
+
+<div class="original">
+ORIGINAL BPM : 120
+</div>
+
+
+</div>
+
+
+
+
+<div class="speed-panel">
+
+
+<div class="label">
+TEMPO
+</div>
+
+
+<div class="speed">
++6%
+</div>
+
+
+
+<div class="speed-buttons">
+
+<button>
+−1%
+</button>
+
+
+<button>
+＋1%
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="slider">
+
+<div class="label">
+SPEED CONTROL
+</div>
+
+
+<div class="track">
+<span></span>
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="controls">
+
+<button>
+⏮
+</button>
+
+<button>
+-5s
+</button>
+
+<button>
+▶
+</button>
+
+<button>
++10s
+</button>
+
+<button>
+⏭
+</button>
+
+
+</div>
+
+
+
+
+
+<h2>
+PLAYLIST
+</h2>
+
+
+
+<div class="playlist">
+
+
+<div class="song">
+
+<span>
+Night Run
+</span>
+
+<span class="song-bpm">
+118
+</span>
+
+</div>
+
+
+<div class="song">
+
+<span>
+City Lights
+</span>
+
+<span class="song-bpm">
+125
+</span>
+
+</div>
+
+
+
+<div class="song">
+
+<span>
+Energy
+</span>
+
+<span class="song-bpm">
+132
+</span>
+
+</div>
+
+
+
+</div>
+
+
+
+
+<div class="bottom">
+
+
+<button>
+＋ 曲を追加
+</button>
+
+
+<button>
+プレイリスト保存
+</button>
+
+
+<button>
+オールクリア
+</button>
+
+
+</div>
+
+
+
+</div>
+
+
+</body>
+
+</html>
