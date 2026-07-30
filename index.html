@@ -405,6 +405,71 @@
   let idCounter = 1;
   function newId(){ return 'trk_' + (idCounter++) + '_' + Date.now().toString(36); }
 
+  // ---------- IndexedDB: persist actual audio blobs across browser sessions ----------
+  // localStorage only holds small text (track names / BPM), but IndexedDB can store
+  // the real audio Blob data, so a saved/restored playlist can play immediately
+  // without asking the user to reselect files (as long as it's the same browser/device
+  // and the data hasn't been cleared).
+  const IDB_NAME = 'bpmPlayerDB';
+  const IDB_STORE = 'audioBlobs';
+  let idbPromise = null;
+
+  function idbOpen(){
+    if (idbPromise) return idbPromise;
+    idbPromise = new Promise((resolve) => {
+      if (!('indexedDB' in window)){ resolve(null); return; }
+      try{
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      } catch(e){ resolve(null); }
+    });
+    return idbPromise;
+  }
+
+  async function idbPutBlob(id, blob){
+    const db = await idbOpen();
+    if (!db) return false;
+    return new Promise((resolve) => {
+      try{
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(blob, id);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      } catch(e){ resolve(false); }
+    });
+  }
+
+  async function idbGetBlob(id){
+    const db = await idbOpen();
+    if (!db) return null;
+    return new Promise((resolve) => {
+      try{
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const req = tx.objectStore(IDB_STORE).get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      } catch(e){ resolve(null); }
+    });
+  }
+
+  async function idbDeleteBlob(id){
+    const db = await idbOpen();
+    if (!db) return false;
+    return new Promise((resolve) => {
+      try{
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).delete(id);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      } catch(e){ resolve(false); }
+    });
+  }
+
   // ---------- Toast ----------
   let toastTimer = null;
   function showToast(text, persistent){
@@ -649,6 +714,7 @@
         placeholder.file = file;
         placeholder.url = URL.createObjectURL(file);
         placeholder.missing = false;
+        idbPutBlob(placeholder.id, file); // remember it so next launch won't need reselecting
       } else {
         toAnalyze.push(file);
       }
@@ -679,6 +745,7 @@
         missing: false
       };
       tracks.push(t);
+      idbPutBlob(t.id, file);
       done++;
       showToast(`BPM解析中  ${done} / ${toAnalyze.length}曲`, true);
       renderPlaylist();
@@ -765,6 +832,7 @@
     const wasCurrent = idx === currentIndex;
     const t = tracks[idx];
     if (t.url) URL.revokeObjectURL(t.url);
+    idbDeleteBlob(t.id);
     tracks.splice(idx, 1);
     if (wasCurrent){
       audio.pause();
@@ -1033,7 +1101,10 @@
   });
   el.confirmCancel.addEventListener('click', () => el.confirmOverlay.classList.remove('show'));
   el.confirmOk.addEventListener('click', () => {
-    tracks.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); });
+    tracks.forEach(t => {
+      if (t.url) URL.revokeObjectURL(t.url);
+      idbDeleteBlob(t.id);
+    });
     tracks = [];
     currentIndex = -1;
     audio.pause();
@@ -1057,7 +1128,8 @@
     const name = (el.saveNameInput.value || '').trim() || ('プレイリスト ' + new Date().toLocaleDateString('ja-JP'));
     let saved = {};
     try{ saved = JSON.parse(localStorage.getItem(STORAGE_SAVED) || '{}'); } catch(e){ saved = {}; }
-    saved[name] = tracks.map(t => ({ name: t.name, originalBpm: t.originalBpm }));
+    // include id so the actual audio blob (stored separately in IndexedDB) can be found again
+    saved[name] = tracks.map(t => ({ id: t.id, name: t.name, originalBpm: t.originalBpm }));
     try{ localStorage.setItem(STORAGE_SAVED, JSON.stringify(saved)); } catch(e){}
     el.saveOverlay.classList.remove('show');
     showToast(`「${name}」として保存しました`);
@@ -1084,45 +1156,67 @@
     });
   }
 
-  function loadSavedPlaylist(name, songList){
-    tracks.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); });
-    tracks = songList.map(s => ({
-      id: newId(),
-      name: s.name,
-      originalBpm: s.originalBpm,
-      file: null,
-      url: null,
-      missing: true
+  // Builds track objects from stored metadata, reattaching audio automatically
+  // from IndexedDB wherever the blob is still available.
+  async function hydrateTracksFromMeta(metaList){
+    const built = await Promise.all(metaList.map(async (s) => {
+      const id = s.id || newId(); // older saves made before this feature won't have an id
+      const blob = await idbGetBlob(id);
+      if (blob){
+        return {
+          id, name: s.name, originalBpm: s.originalBpm,
+          file: blob, url: URL.createObjectURL(blob), missing: false
+        };
+      }
+      return {
+        id, name: s.name, originalBpm: s.originalBpm,
+        file: null, url: null, missing: true
+      };
     }));
+    return built;
+  }
+
+  async function loadSavedPlaylist(name, songList){
+    tracks.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); });
+    showToast('読み込み中…', true);
+    tracks = await hydrateTracksFromMeta(songList);
     currentIndex = -1;
     audio.pause();
     audio.removeAttribute('src');
     updateNowPlayingUI();
     renderPlaylist();
     persistLastState();
-    showToast(`「${name}」を読み込みました。ファイルを再選択してください`);
+    const missingCount = tracks.filter(t => t.missing).length;
+    hideToast();
+    if (missingCount === 0){
+      showToast(`「${name}」を読み込みました`);
+    } else if (missingCount === tracks.length){
+      showToast(`「${name}」を読み込みました。ファイルを再選択してください`);
+    } else {
+      showToast(`「${name}」を読み込みました（${missingCount}曲は再選択が必要です）`);
+    }
   }
 
   // ---------- Persistence: last working state ----------
   function persistLastState(){
-    const data = tracks.map(t => ({ name: t.name, originalBpm: t.originalBpm }));
+    const data = tracks.map(t => ({ id: t.id, name: t.name, originalBpm: t.originalBpm }));
     try{ localStorage.setItem(STORAGE_LAST, JSON.stringify(data)); } catch(e){}
   }
 
-  function restoreLastState(){
+  async function restoreLastState(){
     let data = [];
     try{ data = JSON.parse(localStorage.getItem(STORAGE_LAST) || '[]'); } catch(e){ data = []; }
     if (!Array.isArray(data) || data.length === 0) return;
-    tracks = data.map(s => ({
-      id: newId(),
-      name: s.name,
-      originalBpm: s.originalBpm,
-      file: null,
-      url: null,
-      missing: true
-    }));
+    tracks = await hydrateTracksFromMeta(data);
     renderPlaylist();
-    showToast('前回のプレイリストを復元しました。ファイルを再選択してください');
+    const missingCount = tracks.filter(t => t.missing).length;
+    if (missingCount === 0){
+      showToast('前回のプレイリストを復元しました');
+    } else if (missingCount === tracks.length){
+      showToast('前回のプレイリストを復元しました。ファイルを再選択してください');
+    } else {
+      showToast(`前回のプレイリストを復元しました（${missingCount}曲は再選択が必要です）`);
+    }
   }
 
   // ---------- Init ----------
