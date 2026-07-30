@@ -2,480 +2,1134 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>BPM PLAYER DJ Style</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BPM PLAYER</title>
 <style>
+  :root{
+    --bg:#0a0c0f;
+    --card:#15181d;
+    --card-2:#1b1f25;
+    --border:#262b32;
+    --accent:#22e0ff;
+    --accent-dim:#0e5866;
+    --text:#eef1f4;
+    --text-dim:#7d8894;
+    --text-dimmer:#4c545e;
+    --danger:#ff4d5e;
+    --radius:18px;
+    --radius-sm:12px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(circle at 50% 0%, #10141a 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,"Segoe UI",sans-serif;
+    min-height:100vh;
+    padding:20px 16px 100px;
+    -webkit-user-select:none; user-select:none;
+  }
+  .wrap{max-width:480px; margin:0 auto;}
 
-body{
-    margin:0;
-    background:#090909;
-    color:white;
-    font-family:Arial,sans-serif;
-}
-
-.app{
-    max-width:430px;
-    margin:auto;
-    padding:15px;
-}
-
-
-/* タイトル */
-
-.header{
+  h1.app-title{
     text-align:center;
-    font-size:22px;
-    letter-spacing:3px;
-    margin-bottom:20px;
-}
+    font-size:15px;
+    letter-spacing:6px;
+    font-weight:700;
+    color:var(--text);
+    margin:6px 0 22px;
+  }
+  h1.app-title span{color:var(--accent);}
 
-
-
-/* BPM表示 */
-
-.bpm-panel{
-
-    background:#151515;
-    border-radius:15px;
-    padding:20px;
+  .now-playing{
     text-align:center;
-
-    border:1px solid #333;
-
-}
-
-
-.label{
-    color:#888;
-    font-size:14px;
-}
-
-
-.bpm{
-
-    font-size:80px;
-    font-weight:bold;
-    color:#00e5ff;
-
-}
-
-
-.unit{
-
-    font-size:20px;
-    color:#00e5ff;
-
-}
-
-
-
-.original{
-
-    margin-top:10px;
-    color:#aaa;
-
-}
-
-
-
-/* 速度 */
-
-.speed-panel{
-
-    margin-top:15px;
-
-    background:#151515;
-
-    border-radius:15px;
-
-    padding:15px;
-
-    text-align:center;
-
-}
-
-
-.speed{
-
-    font-size:40px;
-
-    font-weight:bold;
-
-}
-
-
-
-.speed-buttons{
-
-    display:flex;
-
-    justify-content:center;
-
-    gap:20px;
-
-}
-
-
-.speed-buttons button{
-
-    width:90px;
-
-    height:60px;
-
-    background:#222;
-
-    color:white;
-
-    border:1px solid #555;
-
-    border-radius:10px;
-
-    font-size:30px;
-
-}
-
-
-
-/* バー */
-
-.slider{
-
-    margin-top:20px;
-
-}
-
-
-.track{
-
-    height:12px;
-
-    background:#333;
-
-    border-radius:10px;
-
-}
-
-
-.track span{
-
-    display:block;
-
-    width:60%;
-
-    height:100%;
-
-    background:#00e5ff;
-
-    border-radius:10px;
-
-}
-
-
-
-
-/* 再生操作 */
-
-.controls{
-
-    display:grid;
-
-    grid-template-columns:repeat(5,1fr);
-
-    gap:8px;
-
-    margin-top:25px;
-
-}
-
-
-.controls button{
-
-    height:55px;
-
-    background:#222;
-
-    color:white;
-
-    border:none;
-
-    border-radius:8px;
-
-    font-size:16px;
-
-}
-
-
-
-
-/* プレイリスト */
-
-.playlist{
-
-    margin-top:30px;
-
-}
-
-
-.song{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    background:#151515;
-
-    padding:15px;
-
-    margin-bottom:8px;
-
-    border-radius:8px;
-
-}
-
-
-.song-bpm{
-
-    color:#00e5ff;
-
-    font-weight:bold;
-
-}
-
-
-
-/* 下部 */
-
-.bottom button{
-
-    width:100%;
-
-    height:50px;
-
-    margin-top:10px;
-
-    background:#222;
-
-    color:white;
-
-    border:none;
-
-    border-radius:8px;
-
+    color:var(--text-dim);
+    font-size:13px;
+    margin-bottom:14px;
+    min-height:16px;
+    letter-spacing:.5px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    padding:0 20px;
+  }
+
+  .card{
+    background:linear-gradient(180deg, var(--card-2), var(--card));
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px 18px;
+    margin-bottom:14px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.02);
+  }
+
+  /* BPM display */
+  .bpm-card{text-align:center;}
+  .label-sm{
+    font-size:11px; letter-spacing:3px; color:var(--text-dim); font-weight:600;
+  }
+  .bpm-value{
+    font-size:clamp(80px, 24vw, 116px); font-weight:800; color:var(--accent);
+    line-height:1; margin:8px 0 4px;
+    text-shadow:0 0 34px rgba(34,224,255,.4);
+    font-variant-numeric:tabular-nums;
+    letter-spacing:-1px;
+  }
+  .bpm-unit{color:var(--accent); font-size:13px; font-weight:700; letter-spacing:2px;}
+  .bpm-original{color:var(--text-dim); font-size:12px; margin-top:8px; letter-spacing:1px;}
+
+  /* Tempo card */
+  .tempo-card{text-align:center;}
+  .tempo-pct{
+    font-size:26px; font-weight:800; margin:6px 0 16px; font-variant-numeric:tabular-nums;
+  }
+  .tempo-buttons{display:flex; gap:16px; justify-content:center; align-items:center;}
+  .pill-btn{
+    flex:1; max-width:150px;
+    background:linear-gradient(180deg,#333b45,#262d35);
+    border:1.5px solid #4a5361;
+    color:#ffffff;
+    font-size:24px; font-weight:800;
+    border-radius:16px;
+    padding:16px 0;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+    transition:transform .08s ease, background .15s ease, border-color .15s ease;
+  }
+  .pill-btn:active{transform:scale(.94); background:linear-gradient(180deg,var(--accent),#0aa5c2); border-color:var(--accent); color:#00202a;}
+
+  /* Progress */
+  .progress-card{padding:16px 18px;}
+  .progress-times{display:flex; justify-content:space-between; font-size:11px; color:var(--text-dimmer); margin-bottom:8px; font-variant-numeric:tabular-nums;}
+  .progress-track{
+    position:relative; height:8px; background:#252a31; border-radius:6px; overflow:hidden; cursor:pointer;
+  }
+  .progress-fill{
+    position:absolute; left:0; top:0; bottom:0; width:0%;
+    background:linear-gradient(90deg,#0aa5c2,var(--accent));
+    border-radius:6px;
+  }
+
+  /* Transport */
+  .transport{display:flex; gap:8px; justify-content:space-between; margin-bottom:14px;}
+  .t-btn{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    color:var(--text);
+    height:52px;
+    display:flex; align-items:center; justify-content:center;
     font-size:18px;
+    cursor:pointer;
+    transition:transform .08s ease, background .15s;
+  }
+  .t-btn:active{transform:scale(.92); background:var(--card-2);}
+  .t-btn.play{
+    background:linear-gradient(180deg,#1a2126,#12171b);
+    border-color:var(--accent-dim);
+    color:var(--accent);
+    font-size:20px;
+  }
+  .t-btn small{font-size:10px; font-weight:700; margin-left:2px;}
 
-}
+  /* Playlist */
+  .section-title{
+    font-size:13px; letter-spacing:3px; font-weight:800; color:var(--text-dim);
+    margin:24px 4px 10px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .section-title .count{color:var(--text-dimmer); font-weight:600; letter-spacing:0; font-size:12px;}
 
+  .playlist{list-style:none; margin:0; padding:0; border-radius:var(--radius); overflow:hidden;}
+  .track-row{
+    position:relative;
+    background:var(--card);
+    border-bottom:1px solid var(--border);
+    overflow:hidden;
+  }
+  .track-row:first-child{border-top-left-radius:var(--radius); border-top-right-radius:var(--radius);}
+  .track-row:last-child{border-bottom:none; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius);}
 
+  .track-delete-bg{
+    position:absolute; inset:0;
+    background:var(--danger);
+    display:flex; align-items:center; justify-content:flex-end;
+    padding-right:22px;
+    color:#fff; font-weight:700; font-size:13px;
+  }
+  .track-fg{
+    position:relative;
+    display:flex; align-items:center; gap:10px;
+    background:var(--card);
+    padding:14px 14px;
+    transform:translateX(0);
+    touch-action:pan-y;
+  }
+  .track-fg.dragging{opacity:.6;}
+  .drag-handle{
+    color:var(--text-dimmer); font-size:16px; padding:4px 6px; cursor:grab; touch-action:none;
+    letter-spacing:1px;
+  }
+  .track-fg.active .drag-handle, .track-fg.active .track-name{color:var(--accent);}
+  .track-name{
+    flex:1; font-size:14.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .track-meta{display:flex; align-items:center; gap:6px; flex-shrink:0;}
+  .track-bpm{color:var(--accent); font-weight:700; font-size:14.5px; font-variant-numeric:tabular-nums;}
+  .track-missing{color:var(--text-dimmer); font-size:10px; border:1px solid var(--border); border-radius:6px; padding:2px 6px;}
+
+  .empty-state{
+    text-align:center; color:var(--text-dimmer); font-size:13px; padding:30px 10px;
+    border:1px dashed var(--border); border-radius:var(--radius);
+  }
+
+  /* Buttons */
+  .full-btn{
+    width:100%;
+    background:var(--card);
+    border:1px solid var(--border);
+    color:var(--text);
+    font-size:14.5px; font-weight:600;
+    padding:16px 0;
+    border-radius:var(--radius-sm);
+    margin-top:10px;
+    cursor:pointer;
+    letter-spacing:.5px;
+  }
+  .full-btn:active{background:var(--card-2);}
+  .full-btn.add{color:var(--accent); border-color:var(--accent-dim);}
+  .full-btn.danger{color:var(--danger); border-color:#3a1d21;}
+
+  input[type=file]{display:none;}
+
+  /* Analysis progress toast */
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(120%);
+    background:#1c2127; border:1px solid var(--border); color:var(--text);
+    padding:12px 20px; border-radius:100px; font-size:13px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+    transition:transform .25s ease;
+    z-index:50;
+    display:flex; align-items:center; gap:10px;
+    white-space:nowrap;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .spinner{
+    width:14px; height:14px; border-radius:50%;
+    border:2px solid var(--accent-dim); border-top-color:var(--accent);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* Modal (confirm / save name) */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.6);
+    display:flex; align-items:center; justify-content:center;
+    z-index:100; padding:24px;
+    opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .modal-overlay.show{opacity:1; pointer-events:auto;}
+  .modal{
+    background:var(--card-2); border:1px solid var(--border); border-radius:var(--radius);
+    padding:22px; width:100%; max-width:340px;
+  }
+  .modal h3{margin:0 0 8px; font-size:15px;}
+  .modal p{margin:0 0 16px; color:var(--text-dim); font-size:13px; line-height:1.6;}
+  .modal input[type=text]{
+    width:100%; background:var(--card); border:1px solid var(--border); color:var(--text);
+    padding:12px; border-radius:10px; font-size:14px; margin-bottom:16px; -webkit-user-select:text; user-select:text;
+  }
+  .modal-actions{display:flex; gap:10px;}
+  .modal-actions button{
+    flex:1; padding:12px 0; border-radius:10px; border:1px solid var(--border);
+    background:var(--card); color:var(--text); font-size:14px; font-weight:600; cursor:pointer;
+  }
+  .modal-actions button.primary{background:var(--accent); color:#00202a; border-color:var(--accent);}
+  .modal-actions button.danger-primary{background:var(--danger); color:#fff; border-color:var(--danger);}
+
+  .saved-list{margin-top:6px;}
+  .saved-item{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 14px; background:var(--card); border-bottom:1px solid var(--border); font-size:13px;
+  }
+  .saved-item:first-child{border-top-left-radius:var(--radius-sm); border-top-right-radius:var(--radius-sm);}
+  .saved-item:last-child{border-bottom:none; border-bottom-left-radius:var(--radius-sm); border-bottom-right-radius:var(--radius-sm);}
+  .saved-item button{
+    background:none; border:1px solid var(--border); color:var(--accent);
+    border-radius:8px; padding:6px 10px; font-size:12px; cursor:pointer;
+  }
 </style>
-
 </head>
-
-
-
 <body>
+<div class="wrap">
 
+  <h1 class="app-title">BPM <span>PLAYER</span></h1>
+  <div class="now-playing" id="nowPlaying">曲を選択してください</div>
 
-<div class="app">
+  <div class="card bpm-card">
+    <div class="label-sm">CURRENT BPM</div>
+    <div class="bpm-value" id="currentBpm">--</div>
+    <div class="bpm-unit">BPM</div>
+    <div class="bpm-original" id="originalBpmLabel">ORIGINAL BPM : --</div>
+  </div>
 
+  <div class="card tempo-card">
+    <div class="label-sm">TEMPO</div>
+    <div class="tempo-pct" id="tempoPct">+0%</div>
+    <div class="tempo-buttons">
+      <button class="pill-btn" id="tempoDown">− 1%</button>
+      <button class="pill-btn" id="tempoUp">+ 1%</button>
+    </div>
+  </div>
 
-<div class="header">
-BPM CONTROLLER
-</div>
+  <div class="card progress-card">
+    <div class="progress-times">
+      <span id="curTime">0:00</span>
+      <span id="durTime">0:00</span>
+    </div>
+    <div class="progress-track" id="progressTrack">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
 
+  <div class="transport">
+    <button class="t-btn" id="prevBtn" title="前の曲">⏮</button>
+    <button class="t-btn" id="back5Btn">−5<small>s</small></button>
+    <button class="t-btn play" id="playBtn">▶</button>
+    <button class="t-btn" id="fwd10Btn">+10<small>s</small></button>
+    <button class="t-btn" id="nextBtn" title="次の曲">⏭</button>
+  </div>
 
+  <div class="section-title">PLAYLIST <span class="count" id="playlistCount">0曲</span></div>
+  <ul class="playlist" id="playlist"></ul>
+  <div class="empty-state" id="emptyState">まだ曲がありません。<br>「＋ 曲を追加」から音楽ファイルを選んでください。</div>
 
-<div class="bpm-panel">
+  <input type="file" id="fileInput" accept="audio/*" multiple>
+  <button class="full-btn add" id="addBtn">＋ 曲を追加</button>
+  <button class="full-btn" id="saveBtn">プレイリスト保存</button>
+  <button class="full-btn danger" id="clearBtn">オールクリア</button>
 
-
-<div class="label">
-CURRENT BPM
-</div>
-
-
-<div class="bpm">
-128
-</div>
-
-
-<div class="unit">
-BPM
-</div>
-
-
-<div class="original">
-ORIGINAL BPM : 120
-</div>
-
-
-</div>
-
-
-
-
-<div class="speed-panel">
-
-
-<div class="label">
-TEMPO
-</div>
-
-
-<div class="speed">
-+6%
-</div>
-
-
-
-<div class="speed-buttons">
-
-<button>
-−1%
-</button>
-
-
-<button>
-＋1%
-</button>
-
+  <div class="section-title" id="savedTitle" style="display:none;">保存済みプレイリスト</div>
+  <div class="saved-list" id="savedList"></div>
 
 </div>
 
+<div class="toast" id="toast"><span class="spinner"></span><span id="toastText"></span></div>
 
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal">
+    <h3>すべて削除しますか？</h3>
+    <p>プレイリスト内の全ての曲が削除されます。この操作は取り消せません。</p>
+    <div class="modal-actions">
+      <button id="confirmCancel">キャンセル</button>
+      <button id="confirmOk" class="danger-primary">全て削除</button>
+    </div>
+  </div>
 </div>
 
-
-
-
-
-<div class="slider">
-
-<div class="label">
-SPEED CONTROL
+<div class="modal-overlay" id="saveOverlay">
+  <div class="modal">
+    <h3>プレイリスト保存</h3>
+    <p>このプレイリストに名前を付けて保存します。</p>
+    <input type="text" id="saveNameInput" placeholder="プレイリスト名" maxlength="30">
+    <div class="modal-actions">
+      <button id="saveCancel">キャンセル</button>
+      <button id="saveOk" class="primary">保存</button>
+    </div>
+  </div>
 </div>
 
+<audio id="audioEl" preload="metadata"></audio>
 
-<div class="track">
-<span></span>
-</div>
+<!-- Loads the well-tested "web-audio-beat-detector" library for accurate BPM analysis.
+     If the CDN can't be reached (e.g. offline use), the app falls back to its own
+     onset-envelope/autocorrelation estimator further below. -->
+<script type="module">
+  import { analyze } from 'https://esm.sh/web-audio-beat-detector@8.2.9';
+  window.__bpmAnalyze = analyze;
+  window.dispatchEvent(new Event('bpm-lib-ready'));
+</script>
 
+<script>
+(function(){
+  "use strict";
 
-</div>
+  // ---------- State ----------
+  // track: { id, name, originalBpm, file (File|null), url (objectURL|null), missing (bool) }
+  let tracks = [];
+  let currentIndex = -1;
+  let playbackRatePct = 100; // 100 = normal
+  const audio = document.getElementById('audioEl');
 
+  const STORAGE_LAST = 'bpmplayer_last_state_v1';
+  const STORAGE_SAVED = 'bpmplayer_saved_playlists_v1';
 
+  // ---------- Elements ----------
+  const el = {
+    nowPlaying: document.getElementById('nowPlaying'),
+    currentBpm: document.getElementById('currentBpm'),
+    originalBpmLabel: document.getElementById('originalBpmLabel'),
+    tempoPct: document.getElementById('tempoPct'),
+    tempoUp: document.getElementById('tempoUp'),
+    tempoDown: document.getElementById('tempoDown'),
+    progressTrack: document.getElementById('progressTrack'),
+    progressFill: document.getElementById('progressFill'),
+    curTime: document.getElementById('curTime'),
+    durTime: document.getElementById('durTime'),
+    playBtn: document.getElementById('playBtn'),
+    prevBtn: document.getElementById('prevBtn'),
+    nextBtn: document.getElementById('nextBtn'),
+    back5Btn: document.getElementById('back5Btn'),
+    fwd10Btn: document.getElementById('fwd10Btn'),
+    playlist: document.getElementById('playlist'),
+    playlistCount: document.getElementById('playlistCount'),
+    emptyState: document.getElementById('emptyState'),
+    fileInput: document.getElementById('fileInput'),
+    addBtn: document.getElementById('addBtn'),
+    saveBtn: document.getElementById('saveBtn'),
+    clearBtn: document.getElementById('clearBtn'),
+    savedTitle: document.getElementById('savedTitle'),
+    savedList: document.getElementById('savedList'),
+    toast: document.getElementById('toast'),
+    toastText: document.getElementById('toastText'),
+    confirmOverlay: document.getElementById('confirmOverlay'),
+    confirmCancel: document.getElementById('confirmCancel'),
+    confirmOk: document.getElementById('confirmOk'),
+    saveOverlay: document.getElementById('saveOverlay'),
+    saveNameInput: document.getElementById('saveNameInput'),
+    saveCancel: document.getElementById('saveCancel'),
+    saveOk: document.getElementById('saveOk'),
+  };
 
+  let idCounter = 1;
+  function newId(){ return 'trk_' + (idCounter++) + '_' + Date.now().toString(36); }
 
+  // ---------- Toast ----------
+  let toastTimer = null;
+  function showToast(text, persistent){
+    el.toastText.textContent = text;
+    el.toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    if (!persistent){
+      toastTimer = setTimeout(()=> el.toast.classList.remove('show'), 1800);
+    }
+  }
+  function hideToast(){
+    el.toast.classList.remove('show');
+  }
 
-<div class="controls">
+  // ---------- Time format ----------
+  function fmtTime(s){
+    if (!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s/60);
+    const sec = Math.floor(s%60);
+    return m + ':' + String(sec).padStart(2,'0');
+  }
 
-<button>
-⏮
-</button>
+  // ---------- BPM Detection ----------
+  // Onset-envelope + autocorrelation based tempo estimator.
+  // 1) band-pass the analysis segment to isolate the rhythmic (percussive) range
+  // 2) build a spectral-flux-like onset strength envelope (positive energy increases)
+  // 3) autocorrelate the envelope across the 60-200 BPM lag range
+  // 4) apply a mild perceptual weighting toward common tempo range to avoid octave errors
+  // 5) refine the winning lag with parabolic interpolation for sub-BPM precision
+  async function buildOnsetEnvelope(mono, sampleRate){
+    const OfflineCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const length = mono.length;
+    const offline = new OfflineCtx(1, length, sampleRate);
+    const buf = offline.createBuffer(1, length, sampleRate);
+    buf.copyToChannel(mono, 0);
+    const src = offline.createBufferSource();
+    src.buffer = buf;
+    // isolate the rhythmic band: keep bass/kick + low-mid percussive content,
+    // remove sub-bass rumble and very high frequency noise
+    const highpass = offline.createBiquadFilter();
+    highpass.type = 'highpass';
+    highpass.frequency.value = 40;
+    highpass.Q.value = 0.7;
+    const lowpass = offline.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.value = 200;
+    lowpass.Q.value = 0.7;
+    src.connect(highpass);
+    highpass.connect(lowpass);
+    lowpass.connect(offline.destination);
+    src.start(0);
+    const rendered = await offline.startRendering();
+    const data = rendered.getChannelData(0);
 
-<button>
--5s
-</button>
+    // RMS energy envelope at ~100 frames/sec (10ms hop)
+    const envRate = 100;
+    const winSamples = Math.max(1, Math.round(sampleRate / envRate));
+    const numFrames = Math.floor(data.length / winSamples);
+    const energy = new Float32Array(numFrames);
+    for (let i = 0; i < numFrames; i++){
+      let sum = 0;
+      const start = i * winSamples;
+      for (let j = 0; j < winSamples; j++){
+        const v = data[start + j];
+        sum += v * v;
+      }
+      energy[i] = Math.sqrt(sum / winSamples);
+    }
 
-<button>
-▶
-</button>
+    // Positive spectral-flux-like onset strength (rising energy = likely onset)
+    const flux = new Float32Array(numFrames);
+    for (let i = 1; i < numFrames; i++){
+      const d = energy[i] - energy[i - 1];
+      flux[i] = d > 0 ? d : 0;
+    }
 
-<button>
-+10s
-</button>
+    // light smoothing to suppress single-frame noise
+    const smooth = new Float32Array(numFrames);
+    const smWin = 2;
+    for (let i = 0; i < numFrames; i++){
+      let sum = 0, cnt = 0;
+      for (let j = Math.max(0, i - smWin); j <= Math.min(numFrames - 1, i + smWin); j++){ sum += flux[j]; cnt++; }
+      smooth[i] = sum / cnt;
+    }
 
-<button>
-⏭
-</button>
+    // zero-mean for autocorrelation
+    let mean = 0;
+    for (let i = 0; i < numFrames; i++) mean += smooth[i];
+    mean /= (numFrames || 1);
+    const envelope = new Float32Array(numFrames);
+    for (let i = 0; i < numFrames; i++) envelope[i] = smooth[i] - mean;
 
+    return { envelope, envRate };
+  }
 
-</div>
+  function estimateTempo(envelope, envRate){
+    const minBpm = 60, maxBpm = 200;
+    const minLag = Math.max(1, Math.floor(envRate * 60 / maxBpm));
+    const maxLag = Math.min(envelope.length - 2, Math.ceil(envRate * 60 / minBpm));
+    if (maxLag <= minLag) return { bpm: 120, confidence: 0 };
 
+    const rawScores = [];
+    for (let lag = minLag; lag <= maxLag; lag++){
+      let sum = 0;
+      const n = envelope.length - lag;
+      for (let i = 0; i < n; i++) sum += envelope[i] * envelope[i + lag];
+      rawScores.push({ lag, score: n > 0 ? sum / n : 0 });
+    }
 
+    // perceptual weighting: gently favor tempi near typical walk/run cadence range,
+    // which also helps resolve half/double-tempo (octave) ambiguity
+    let best = null;
+    for (const s of rawScores){
+      const bpm = 60 * envRate / s.lag;
+      const center = 128, sigma = 60;
+      const weight = 0.6 + 0.4 * Math.exp(-((bpm - center) ** 2) / (2 * sigma * sigma));
+      const weighted = s.score * weight;
+      if (!best || weighted > best.weighted){
+        best = { lag: s.lag, score: s.score, weighted };
+      }
+    }
 
+    // parabolic interpolation around the winning lag for sub-integer precision
+    const idx = rawScores.findIndex(s => s.lag === best.lag);
+    let refinedLag = best.lag;
+    if (idx > 0 && idx < rawScores.length - 1){
+      const y0 = rawScores[idx - 1].score, y1 = rawScores[idx].score, y2 = rawScores[idx + 1].score;
+      const denom = (y0 - 2 * y1 + y2);
+      if (denom !== 0){
+        const delta = 0.5 * (y0 - y2) / denom;
+        if (Math.abs(delta) < 1) refinedLag = best.lag + delta;
+      }
+    }
 
+    let bpm = 60 * envRate / refinedLag;
+    // fold octave errors into a sensible display range
+    while (bpm < 70) bpm *= 2;
+    while (bpm > 190) bpm /= 2;
 
-<h2>
-PLAYLIST
-</h2>
+    return { bpm, confidence: best.score };
+  }
 
+  // Cuts an AudioBuffer down to [startSec, endSec) as a new AudioBuffer.
+  function sliceAudioBuffer(buffer, startSec, endSec){
+    const sampleRate = buffer.sampleRate;
+    const startSample = Math.max(0, Math.floor(startSec * sampleRate));
+    const endSample = Math.min(buffer.length, Math.floor(endSec * sampleRate));
+    const length = Math.max(1, endSample - startSample);
+    let out;
+    try{
+      out = new AudioBuffer({ length, numberOfChannels: buffer.numberOfChannels, sampleRate });
+    } catch(e){
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const tmpCtx = new AudioCtx();
+      out = tmpCtx.createBuffer(buffer.numberOfChannels, length, sampleRate);
+      if (tmpCtx.close) tmpCtx.close();
+    }
+    for (let ch = 0; ch < buffer.numberOfChannels; ch++){
+      out.copyToChannel(buffer.getChannelData(ch).subarray(startSample, endSample), ch, 0);
+    }
+    return out;
+  }
 
+  // Waits (briefly) for the web-audio-beat-detector module to finish loading from the CDN.
+  function waitForBpmLib(timeoutMs){
+    return new Promise((resolve) => {
+      if (window.__bpmAnalyze){ resolve(true); return; }
+      const onReady = () => { window.removeEventListener('bpm-lib-ready', onReady); resolve(true); };
+      window.addEventListener('bpm-lib-ready', onReady);
+      setTimeout(() => resolve(!!window.__bpmAnalyze), timeoutMs);
+    });
+  }
 
-<div class="playlist">
+  // Fallback estimator (used only if the CDN library can't be loaded, e.g. offline use).
+  async function estimateTempoFallback(segmentBuffer){
+    const sampleRate = segmentBuffer.sampleRate;
+    const length = segmentBuffer.length;
+    const chCount = segmentBuffer.numberOfChannels;
+    const mono = new Float32Array(length);
+    for (let ch = 0; ch < chCount; ch++){
+      const data = segmentBuffer.getChannelData(ch);
+      for (let i = 0; i < length; i++) mono[i] += data[i] / chCount;
+    }
+    if (length < sampleRate * 2) return 120;
+    const { envelope, envRate } = await buildOnsetEnvelope(mono, sampleRate);
+    const { bpm } = estimateTempo(envelope, envRate);
+    return bpm;
+  }
 
+  async function detectBPM(file){
+    const arrayBuffer = await file.arrayBuffer();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioCtx();
+    let audioBuffer;
+    try{
+      audioBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+    } finally {
+      if (ctx.close) ctx.close();
+    }
 
-<div class="song">
+    const duration = audioBuffer.duration;
+    // Apply the spec's analysis window (60-120s for long tracks, whole track otherwise)
+    // before handing the segment to the analyzer.
+    const segment = duration >= 120 ? sliceAudioBuffer(audioBuffer, 60, 120) : audioBuffer;
 
-<span>
-Night Run
-</span>
+    // Primary: the well-tested "web-audio-beat-detector" library.
+    const libReady = await waitForBpmLib(4000);
+    if (libReady && window.__bpmAnalyze){
+      try{
+        const bpm = await window.__bpmAnalyze(segment);
+        if (isFinite(bpm) && bpm > 0) return Math.round(bpm);
+      } catch(err){
+        console.warn('web-audio-beat-detector failed, falling back to local estimator', err);
+      }
+    }
 
-<span class="song-bpm">
-118
-</span>
+    // Fallback: local onset-envelope/autocorrelation estimator.
+    try{
+      const bpm = await estimateTempoFallback(segment);
+      return Math.round(bpm);
+    } catch(err){
+      console.error('BPM fallback estimator failed', err);
+      return 120;
+    }
+  }
 
-</div>
+  // ---------- File handling ----------
+  el.addBtn.addEventListener('click', () => el.fileInput.click());
 
+  el.fileInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = ''; // allow re-selecting same file later
+    if (files.length === 0) return;
 
-<div class="song">
+    // Try to match against missing placeholder tracks by name first
+    const toAnalyze = [];
+    for (const file of files){
+      const placeholder = tracks.find(t => t.missing && t.name === file.name);
+      if (placeholder){
+        placeholder.file = file;
+        placeholder.url = URL.createObjectURL(file);
+        placeholder.missing = false;
+      } else {
+        toAnalyze.push(file);
+      }
+    }
+    renderPlaylist();
+    persistLastState();
 
-<span>
-City Lights
-</span>
+    if (toAnalyze.length === 0) return;
 
-<span class="song-bpm">
-125
-</span>
+    let done = 0;
+    showToast(`BPM解析中  ${done} / ${toAnalyze.length}曲`, true);
+    const isFirstPopulation = tracks.filter(t => !t.missing).length === 0;
 
-</div>
+    for (const file of toAnalyze){
+      let bpm;
+      try{
+        bpm = await detectBPM(file);
+      } catch(err){
+        console.error('BPM detection failed', err);
+        bpm = 120;
+      }
+      const t = {
+        id: newId(),
+        name: file.name.replace(/\.[^/.]+$/, ''),
+        originalBpm: bpm,
+        file,
+        url: URL.createObjectURL(file),
+        missing: false
+      };
+      tracks.push(t);
+      done++;
+      showToast(`BPM解析中  ${done} / ${toAnalyze.length}曲`, true);
+      renderPlaylist();
+    }
 
+    if (isFirstPopulation){
+      tracks.sort((a,b) => a.originalBpm - b.originalBpm);
+    }
 
+    if (currentIndex === -1 && tracks.length > 0){
+      loadTrack(0, false);
+    }
 
-<div class="song">
+    hideToast();
+    showToast(`解析完了：${toAnalyze.length}曲を追加しました`);
+    renderPlaylist();
+    persistLastState();
+  });
 
-<span>
-Energy
-</span>
+  // ---------- Playlist rendering ----------
+  function renderPlaylist(){
+    el.playlist.innerHTML = '';
+    el.playlistCount.textContent = tracks.length + '曲';
+    el.emptyState.style.display = tracks.length === 0 ? 'block' : 'none';
 
-<span class="song-bpm">
-132
-</span>
+    tracks.forEach((t, idx) => {
+      const li = document.createElement('li');
+      li.className = 'track-row';
+      li.dataset.id = t.id;
 
-</div>
+      const delBg = document.createElement('div');
+      delBg.className = 'track-delete-bg';
+      delBg.textContent = '削除';
 
+      const fg = document.createElement('div');
+      fg.className = 'track-fg' + (idx === currentIndex ? ' active' : '');
 
+      const handle = document.createElement('div');
+      handle.className = 'drag-handle';
+      handle.textContent = '⠿';
 
-</div>
+      const name = document.createElement('div');
+      name.className = 'track-name';
+      name.textContent = t.name;
 
+      const meta = document.createElement('div');
+      meta.className = 'track-meta';
+      const bpm = document.createElement('div');
+      bpm.className = 'track-bpm';
+      bpm.textContent = t.originalBpm + ' BPM';
+      meta.appendChild(bpm);
+      if (t.missing){
+        const tag = document.createElement('div');
+        tag.className = 'track-missing';
+        tag.textContent = '再選択';
+        meta.appendChild(tag);
+      }
 
+      fg.appendChild(handle);
+      fg.appendChild(name);
+      fg.appendChild(meta);
 
+      fg.addEventListener('click', (ev) => {
+        if (fg.dataset.suppressClick === '1'){ fg.dataset.suppressClick = '0'; return; }
+        if (t.missing){
+          showToast('この曲のファイルを再選択してください');
+          return;
+        }
+        loadTrack(idx, true);
+      });
 
-<div class="bottom">
+      li.appendChild(delBg);
+      li.appendChild(fg);
+      el.playlist.appendChild(li);
 
+      attachSwipeToDelete(fg, li, t.id);
+      attachDragReorder(handle, li, t.id);
+    });
+  }
 
-<button>
-＋ 曲を追加
-</button>
+  function removeTrack(id){
+    const idx = tracks.findIndex(t => t.id === id);
+    if (idx === -1) return;
+    const wasCurrent = idx === currentIndex;
+    const t = tracks[idx];
+    if (t.url) URL.revokeObjectURL(t.url);
+    tracks.splice(idx, 1);
+    if (wasCurrent){
+      audio.pause();
+      audio.removeAttribute('src');
+      currentIndex = -1;
+      updateNowPlayingUI();
+    } else if (idx < currentIndex){
+      currentIndex--;
+    }
+    renderPlaylist();
+    persistLastState();
+  }
 
+  // ---------- Swipe to delete ----------
+  function attachSwipeToDelete(fg, li, id){
+    let startX = 0, startY = 0, currentX = 0, dragging = false, decided = false, horizontal = false;
+    const openWidth = 84;
 
-<button>
-プレイリスト保存
-</button>
+    function onStart(x, y){
+      startX = x; startY = y; currentX = 0; dragging = true; decided = false; horizontal = false;
+      fg.style.transition = 'none';
+    }
+    function onMove(x, y){
+      if (!dragging) return;
+      const dx = x - startX;
+      const dy = y - startY;
+      if (!decided){
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6){
+          decided = true;
+          horizontal = Math.abs(dx) > Math.abs(dy);
+        } else { return; }
+      }
+      if (!horizontal) return;
+      currentX = Math.min(0, Math.max(dx, -openWidth - 20));
+      fg.style.transform = `translateX(${currentX}px)`;
+    }
+    function onEnd(){
+      if (!dragging) return;
+      dragging = false;
+      fg.style.transition = 'transform .18s ease';
+      if (horizontal && currentX < -openWidth * 0.6){
+        fg.style.transform = `translateX(-${openWidth}px)`;
+        fg.dataset.suppressClick = '1';
+      } else {
+        fg.style.transform = 'translateX(0)';
+      }
+    }
 
+    fg.addEventListener('touchstart', (e) => { onStart(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+    fg.addEventListener('touchmove', (e) => { onMove(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+    fg.addEventListener('touchend', onEnd);
 
-<button>
-オールクリア
-</button>
+    let mouseDown = false;
+    fg.addEventListener('mousedown', (e) => { if (e.target.closest('.drag-handle')) return; mouseDown = true; onStart(e.clientX, e.clientY); });
+    window.addEventListener('mousemove', (e) => { if (mouseDown) onMove(e.clientX, e.clientY); });
+    window.addEventListener('mouseup', () => { if (mouseDown){ mouseDown = false; onEnd(); } });
 
+    li.addEventListener('click', (e) => {
+      const rect = fg.getBoundingClientRect();
+      const liRect = li.getBoundingClientRect();
+      const revealed = fg.style.transform.includes('-' + openWidth);
+      if (revealed && e.clientX > rect.right - 20){
+        removeTrack(id);
+      }
+    });
+  }
 
-</div>
+  // ---------- Drag reorder ----------
+  function attachDragReorder(handle, li, id){
+    let dragging = false;
+    let startY = 0;
+    let placeholder = null;
 
+    function pointerDown(y){
+      dragging = true;
+      startY = y;
+      li.classList.add('dragging');
+      li.style.position = 'relative';
+      li.style.zIndex = '10';
+      placeholder = document.createElement('li');
+      placeholder.style.height = li.offsetHeight + 'px';
+      placeholder.style.background = 'transparent';
+      li.parentNode.insertBefore(placeholder, li.nextSibling);
+    }
+    function pointerMove(y){
+      if (!dragging) return;
+      const dy = y - startY;
+      li.style.transform = `translateY(${dy}px)`;
+      // find sibling to swap with
+      const siblings = Array.from(el.playlist.querySelectorAll('.track-row')).filter(x => x !== li);
+      for (const sib of siblings){
+        const rect = sib.getBoundingClientRect();
+        const mid = rect.top + rect.height/2;
+        if (y < mid && sib.previousSibling !== li && sib !== placeholder){
+          el.playlist.insertBefore(placeholder, sib);
+          break;
+        } else if (y >= mid){
+          const next = sib.nextSibling;
+          if (next !== placeholder) el.playlist.insertBefore(placeholder, next);
+        }
+      }
+    }
+    function pointerUp(){
+      if (!dragging) return;
+      dragging = false;
+      li.classList.remove('dragging');
+      li.style.transform = '';
+      li.style.zIndex = '';
+      if (placeholder && placeholder.parentNode){
+        placeholder.parentNode.insertBefore(li, placeholder);
+        placeholder.remove();
+      }
+      placeholder = null;
+      // Recompute tracks order from DOM
+      const newOrder = Array.from(el.playlist.querySelectorAll('.track-row')).map(row => row.dataset.id);
+      const wasCurrentId = currentIndex >= 0 && tracks[currentIndex] ? tracks[currentIndex].id : null;
+      tracks = newOrder.map(tid => tracks.find(t => t.id === tid)).filter(Boolean);
+      if (wasCurrentId) currentIndex = tracks.findIndex(t => t.id === wasCurrentId);
+      renderPlaylist();
+      persistLastState();
+    }
 
+    handle.addEventListener('touchstart', (e) => { pointerDown(e.touches[0].clientY); e.preventDefault(); }, {passive:false});
+    handle.addEventListener('touchmove', (e) => { pointerMove(e.touches[0].clientY); e.preventDefault(); }, {passive:false});
+    handle.addEventListener('touchend', pointerUp);
 
-</div>
+    handle.addEventListener('mousedown', (e) => { pointerDown(e.clientY); e.preventDefault(); });
+    window.addEventListener('mousemove', (e) => { if (dragging) pointerMove(e.clientY); });
+    window.addEventListener('mouseup', () => { if (dragging) pointerUp(); });
+  }
 
+  // ---------- Playback ----------
+  function loadTrack(idx, autoplay){
+    if (idx < 0 || idx >= tracks.length) return;
+    const t = tracks[idx];
+    if (t.missing || !t.url){
+      showToast('この曲のファイルを再選択してください');
+      return;
+    }
+    currentIndex = idx;
+    audio.src = t.url;
+    audio.playbackRate = playbackRatePct / 100;
+    try { audio.preservesPitch = true; audio.mozPreservesPitch = true; audio.webkitPreservesPitch = true; } catch(e){}
+    if (autoplay){
+      audio.play().catch(()=>{});
+    }
+    updateNowPlayingUI();
+    renderPlaylist();
+  }
 
+  function updateNowPlayingUI(){
+    if (currentIndex === -1 || !tracks[currentIndex]){
+      el.nowPlaying.textContent = '曲を選択してください';
+      el.currentBpm.textContent = '--';
+      el.originalBpmLabel.textContent = 'ORIGINAL BPM : --';
+      el.playBtn.textContent = '▶';
+      return;
+    }
+    const t = tracks[currentIndex];
+    el.nowPlaying.textContent = t.name;
+    el.originalBpmLabel.textContent = 'ORIGINAL BPM : ' + t.originalBpm;
+    updateCurrentBpmDisplay();
+    el.playBtn.textContent = audio.paused ? '▶' : '⏸';
+  }
+
+  function updateCurrentBpmDisplay(){
+    if (currentIndex === -1 || !tracks[currentIndex]){
+      el.currentBpm.textContent = '--';
+      return;
+    }
+    const t = tracks[currentIndex];
+    const cur = Math.round(t.originalBpm * (playbackRatePct / 100));
+    el.currentBpm.textContent = cur;
+  }
+
+  el.playBtn.addEventListener('click', () => {
+    if (currentIndex === -1){
+      if (tracks.length > 0) loadTrack(0, true);
+      return;
+    }
+    if (audio.paused){ audio.play().catch(()=>{}); }
+    else { audio.pause(); }
+  });
+
+  audio.addEventListener('play', () => { el.playBtn.textContent = '⏸'; });
+  audio.addEventListener('pause', () => { el.playBtn.textContent = '▶'; });
+  audio.addEventListener('ended', () => { goNext(); });
+
+  function goNext(){
+    if (tracks.length === 0) return;
+    let next = currentIndex + 1;
+    if (next >= tracks.length) next = 0;
+    // skip missing files
+    let attempts = 0;
+    while (tracks[next] && tracks[next].missing && attempts < tracks.length){
+      next = (next + 1) % tracks.length;
+      attempts++;
+    }
+    loadTrack(next, true);
+  }
+  function goPrev(){
+    if (tracks.length === 0) return;
+    let prev = currentIndex - 1;
+    if (prev < 0) prev = tracks.length - 1;
+    let attempts = 0;
+    while (tracks[prev] && tracks[prev].missing && attempts < tracks.length){
+      prev = (prev - 1 + tracks.length) % tracks.length;
+      attempts++;
+    }
+    loadTrack(prev, true);
+  }
+  el.nextBtn.addEventListener('click', goNext);
+  el.prevBtn.addEventListener('click', goPrev);
+
+  el.back5Btn.addEventListener('click', () => {
+    if (currentIndex === -1) return;
+    audio.currentTime = Math.max(0, audio.currentTime - 5);
+  });
+  el.fwd10Btn.addEventListener('click', () => {
+    if (currentIndex === -1) return;
+    audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
+  });
+
+  // ---------- Tempo ----------
+  function setTempo(pct){
+    playbackRatePct = Math.max(50, Math.min(200, pct));
+    audio.playbackRate = playbackRatePct / 100;
+    const diff = playbackRatePct - 100;
+    el.tempoPct.textContent = (diff >= 0 ? '+' : '') + diff + '%';
+    updateCurrentBpmDisplay();
+  }
+  el.tempoUp.addEventListener('click', () => setTempo(playbackRatePct + 1));
+  el.tempoDown.addEventListener('click', () => setTempo(playbackRatePct - 1));
+
+  // ---------- Progress ----------
+  audio.addEventListener('timeupdate', () => {
+    const dur = audio.duration || 0;
+    const pct = dur ? (audio.currentTime / dur) * 100 : 0;
+    el.progressFill.style.width = pct + '%';
+    el.curTime.textContent = fmtTime(audio.currentTime);
+    el.durTime.textContent = fmtTime(dur);
+  });
+  audio.addEventListener('loadedmetadata', () => {
+    el.durTime.textContent = fmtTime(audio.duration);
+  });
+
+  function seekFromEvent(clientX){
+    const rect = el.progressTrack.getBoundingClientRect();
+    const pct = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    if (audio.duration){
+      audio.currentTime = pct * audio.duration;
+    }
+  }
+  let seeking = false;
+  el.progressTrack.addEventListener('mousedown', (e) => { seeking = true; seekFromEvent(e.clientX); });
+  window.addEventListener('mousemove', (e) => { if (seeking) seekFromEvent(e.clientX); });
+  window.addEventListener('mouseup', () => { seeking = false; });
+  el.progressTrack.addEventListener('touchstart', (e) => { seeking = true; seekFromEvent(e.touches[0].clientX); }, {passive:true});
+  el.progressTrack.addEventListener('touchmove', (e) => { if (seeking) seekFromEvent(e.touches[0].clientX); }, {passive:true});
+  el.progressTrack.addEventListener('touchend', () => { seeking = false; });
+
+  // ---------- Clear all ----------
+  el.clearBtn.addEventListener('click', () => {
+    if (tracks.length === 0){ showToast('プレイリストは空です'); return; }
+    el.confirmOverlay.classList.add('show');
+  });
+  el.confirmCancel.addEventListener('click', () => el.confirmOverlay.classList.remove('show'));
+  el.confirmOk.addEventListener('click', () => {
+    tracks.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); });
+    tracks = [];
+    currentIndex = -1;
+    audio.pause();
+    audio.removeAttribute('src');
+    updateNowPlayingUI();
+    renderPlaylist();
+    persistLastState();
+    el.confirmOverlay.classList.remove('show');
+    showToast('すべて削除しました');
+  });
+
+  // ---------- Save playlist ----------
+  el.saveBtn.addEventListener('click', () => {
+    if (tracks.length === 0){ showToast('プレイリストは空です'); return; }
+    el.saveNameInput.value = '';
+    el.saveOverlay.classList.add('show');
+    setTimeout(() => el.saveNameInput.focus(), 50);
+  });
+  el.saveCancel.addEventListener('click', () => el.saveOverlay.classList.remove('show'));
+  el.saveOk.addEventListener('click', () => {
+    const name = (el.saveNameInput.value || '').trim() || ('プレイリスト ' + new Date().toLocaleDateString('ja-JP'));
+    let saved = {};
+    try{ saved = JSON.parse(localStorage.getItem(STORAGE_SAVED) || '{}'); } catch(e){ saved = {}; }
+    saved[name] = tracks.map(t => ({ name: t.name, originalBpm: t.originalBpm }));
+    try{ localStorage.setItem(STORAGE_SAVED, JSON.stringify(saved)); } catch(e){}
+    el.saveOverlay.classList.remove('show');
+    showToast(`「${name}」として保存しました`);
+    renderSavedPlaylists();
+  });
+
+  function renderSavedPlaylists(){
+    let saved = {};
+    try{ saved = JSON.parse(localStorage.getItem(STORAGE_SAVED) || '{}'); } catch(e){ saved = {}; }
+    const names = Object.keys(saved);
+    el.savedTitle.style.display = names.length ? 'flex' : 'none';
+    el.savedList.innerHTML = '';
+    names.forEach(name => {
+      const row = document.createElement('div');
+      row.className = 'saved-item';
+      const label = document.createElement('div');
+      label.textContent = `${name} (${saved[name].length}曲)`;
+      const btn = document.createElement('button');
+      btn.textContent = '読み込む';
+      btn.addEventListener('click', () => loadSavedPlaylist(name, saved[name]));
+      row.appendChild(label);
+      row.appendChild(btn);
+      el.savedList.appendChild(row);
+    });
+  }
+
+  function loadSavedPlaylist(name, songList){
+    tracks.forEach(t => { if (t.url) URL.revokeObjectURL(t.url); });
+    tracks = songList.map(s => ({
+      id: newId(),
+      name: s.name,
+      originalBpm: s.originalBpm,
+      file: null,
+      url: null,
+      missing: true
+    }));
+    currentIndex = -1;
+    audio.pause();
+    audio.removeAttribute('src');
+    updateNowPlayingUI();
+    renderPlaylist();
+    persistLastState();
+    showToast(`「${name}」を読み込みました。ファイルを再選択してください`);
+  }
+
+  // ---------- Persistence: last working state ----------
+  function persistLastState(){
+    const data = tracks.map(t => ({ name: t.name, originalBpm: t.originalBpm }));
+    try{ localStorage.setItem(STORAGE_LAST, JSON.stringify(data)); } catch(e){}
+  }
+
+  function restoreLastState(){
+    let data = [];
+    try{ data = JSON.parse(localStorage.getItem(STORAGE_LAST) || '[]'); } catch(e){ data = []; }
+    if (!Array.isArray(data) || data.length === 0) return;
+    tracks = data.map(s => ({
+      id: newId(),
+      name: s.name,
+      originalBpm: s.originalBpm,
+      file: null,
+      url: null,
+      missing: true
+    }));
+    renderPlaylist();
+    showToast('前回のプレイリストを復元しました。ファイルを再選択してください');
+  }
+
+  // ---------- Init ----------
+  setTempo(100);
+  restoreLastState();
+  renderSavedPlaylists();
+  updateNowPlayingUI();
+
+})();
+</script>
 </body>
-
 </html>
