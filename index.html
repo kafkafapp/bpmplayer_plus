@@ -248,13 +248,21 @@
   .modal-actions button.primary{background:var(--accent); color:#00202a; border-color:var(--accent);}
   .modal-actions button.danger-primary{background:var(--danger); color:#fff; border-color:var(--danger);}
 
-  .saved-list{margin-top:6px;}
-  .saved-item{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:12px 14px; background:var(--card); border-bottom:1px solid var(--border); font-size:13px;
+  .saved-list{margin-top:6px; border-radius:var(--radius-sm); overflow:hidden;}
+  .saved-row{
+    position:relative;
+    background:var(--card);
+    border-bottom:1px solid var(--border);
+    overflow:hidden;
   }
-  .saved-item:first-child{border-top-left-radius:var(--radius-sm); border-top-right-radius:var(--radius-sm);}
-  .saved-item:last-child{border-bottom:none; border-bottom-left-radius:var(--radius-sm); border-bottom-right-radius:var(--radius-sm);}
+  .saved-row:first-child{border-top-left-radius:var(--radius-sm); border-top-right-radius:var(--radius-sm);}
+  .saved-row:last-child{border-bottom:none; border-bottom-left-radius:var(--radius-sm); border-bottom-right-radius:var(--radius-sm);}
+  .saved-item{
+    position:relative;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 14px; background:var(--card); font-size:13px;
+    touch-action:pan-y;
+  }
   .saved-item button{
     background:none; border:1px solid var(--border); color:var(--accent);
     border-radius:8px; padding:6px 10px; font-size:12px; cursor:pointer;
@@ -821,7 +829,7 @@
       li.appendChild(fg);
       el.playlist.appendChild(li);
 
-      attachSwipeToDelete(fg, li, t.id);
+      attachSwipeToDelete(fg, li, () => removeTrack(t.id));
       attachDragReorder(handle, li, t.id);
     });
   }
@@ -847,7 +855,7 @@
   }
 
   // ---------- Swipe to delete ----------
-  function attachSwipeToDelete(fg, li, id){
+  function attachSwipeToDelete(fg, li, onDelete){
     let startX = 0, startY = 0, currentX = 0, dragging = false, decided = false, horizontal = false;
     const openWidth = 84;
 
@@ -895,7 +903,7 @@
       const liRect = li.getBoundingClientRect();
       const revealed = fg.style.transform.includes('-' + openWidth);
       if (revealed && e.clientX > rect.right - 20){
-        removeTrack(id);
+        onDelete();
       }
     });
   }
@@ -1143,6 +1151,13 @@
     el.savedTitle.style.display = names.length ? 'flex' : 'none';
     el.savedList.innerHTML = '';
     names.forEach(name => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'saved-row';
+
+      const delBg = document.createElement('div');
+      delBg.className = 'track-delete-bg';
+      delBg.textContent = '削除';
+
       const row = document.createElement('div');
       row.className = 'saved-item';
       const label = document.createElement('div');
@@ -1152,8 +1167,22 @@
       btn.addEventListener('click', () => loadSavedPlaylist(name, saved[name]));
       row.appendChild(label);
       row.appendChild(btn);
-      el.savedList.appendChild(row);
+
+      wrapper.appendChild(delBg);
+      wrapper.appendChild(row);
+      el.savedList.appendChild(wrapper);
+
+      attachSwipeToDelete(row, wrapper, () => deleteSavedPlaylist(name));
     });
+  }
+
+  function deleteSavedPlaylist(name){
+    let saved = {};
+    try{ saved = JSON.parse(localStorage.getItem(STORAGE_SAVED) || '{}'); } catch(e){ saved = {}; }
+    delete saved[name];
+    try{ localStorage.setItem(STORAGE_SAVED, JSON.stringify(saved)); } catch(e){}
+    showToast(`「${name}」を削除しました`);
+    renderSavedPlaylists();
   }
 
   // Builds track objects from stored metadata, reattaching audio automatically
